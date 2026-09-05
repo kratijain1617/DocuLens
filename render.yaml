@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: doculens-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: EMBEDDING_PROVIDER
+        value: local
+      - key: CORS_ORIGINS
+        sync: false
