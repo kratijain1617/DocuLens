@@ -158,7 +158,7 @@ Frontend:
 
 | Variable | Purpose |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | API origin. Default `http://localhost:8000`. |
+| `NEXT_PUBLIC_API_URL` | API origin. Leave unset on Vercel so the site calls `/api` on the same domain. Locally it defaults to `http://localhost:8000`. |
 
 `sentence-transformers` is optional and is not installed by default. Point `EMBEDDING_PROVIDER` at it only after installing that package.
 
@@ -201,11 +201,18 @@ The Evaluation page charts those rates and lists correct and incorrect examples.
 
 ## Deployment
 
-Frontend: import the repository in Vercel and set the root directory to `frontend`. Set `NEXT_PUBLIC_API_URL` to the public API URL.
+Import this repository in Vercel and leave the root directory as the repository root. Do not set it to `frontend`. The root `vercel.json` defines two services in one project:
 
-Backend: Render can use the included `render.yaml`. The root directory is `backend`, and the start command is `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set `CORS_ORIGINS` to the Vercel origin. Railway uses the same start command.
+- `frontend` is the Next.js app.
+- `backend` is the FastAPI app at `app.main:app`.
 
-SQLite on a default Render disk is ephemeral. For a durable deployment, use a persistent disk or set `DATABASE_URL` to Postgres and migrate the SQLAlchemy models. Uploaded files also need persistent disk or object storage.
+Requests to `/api/...` go to FastAPI. Every other path goes to Next.js, so the browser can call the API on the same domain. Leave `NEXT_PUBLIC_API_URL` unset for that. Set it only if the API is hosted somewhere else.
+
+Optional backend variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, `EMBEDDING_PROVIDER`, and `CORS_ORIGINS`. The demo does not need an API key.
+
+On Vercel, the database and uploaded PDFs are stored under `/tmp`. A new instance starts empty, and Try Demo builds the sample library again. For data that must survive a restart, use a persistent disk or set `DATABASE_URL` to Postgres and move files to object storage.
+
+Render can still use `render.yaml`. Its root directory is `backend`, and the start command is `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set `CORS_ORIGINS` to the site origin. Railway uses the same start command.
 
 ## Privacy and limits
 

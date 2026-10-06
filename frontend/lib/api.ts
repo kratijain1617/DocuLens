@@ -1,6 +1,13 @@
 import type { AnswerRecord, CompareResult, DocumentItem, DocumentSummary, EvalItemResult, EvalSummary, User } from "@/lib/types";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function apiBase() {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+  if (configured) return configured;
+  // On Vercel the API is the same site, under /api. Locally it stays on port 8000.
+  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8000";
+}
+
+const BASE = apiBase();
 
 export class ApiError extends Error {
   status: number;

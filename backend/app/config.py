@@ -7,7 +7,9 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BACKEND_DIR / ".env")
 load_dotenv(BACKEND_DIR.parent / ".env")
 
-DATA_DIR = BACKEND_DIR / "data"
+# Vercel functions can write only under /tmp. Local runs keep files in backend/data.
+ON_VERCEL = os.getenv("VERCEL") == "1"
+DATA_DIR = Path("/tmp/doculens") if ON_VERCEL else BACKEND_DIR / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
 SAMPLE_DIR = DATA_DIR / "samples"
 IDF_DIR = DATA_DIR / "idf"

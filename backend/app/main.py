@@ -21,6 +21,7 @@ from app.config import (
     DISCLAIMER,
     MAX_DOCUMENTS,
     MAX_UPLOAD_BYTES,
+    ON_VERCEL,
     PROCESSING_STEPS,
     SAMPLE_DIR,
     UPLOAD_DIR,
@@ -40,7 +41,7 @@ origins = [origin.strip() for origin in CORS_ORIGINS.split(",") if origin.strip(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins or ["http://localhost:3000"],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?|https://([a-z0-9-]+\.)?vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -379,7 +380,11 @@ async def upload_document(
         finally:
             session.close()
 
-    threading.Thread(target=_run, daemon=True).start()
+    # A background thread is frozen when a Vercel function returns, so finish indexing first.
+    if ON_VERCEL:
+        process_document(db, document_id)
+    else:
+        threading.Thread(target=_run, daemon=True).start()
     db.refresh(document)
     return _public_document(db, document)
 
